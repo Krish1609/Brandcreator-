@@ -80,13 +80,7 @@ router.post('/submit', auth, upload.array('files', 5), async (req, res) => {
       submittedAt: new Date(),
     });
 
-    // Update application to mark content submitted (Sequelize syntax)
-    // Note: since the schema has contentSubmitted field (Mongoose version line 85), we should make sure that if the MySQL schema doesn't have it explicitly stored as a column, it doesn't crash.
-    // Wait, did Application model have contentSubmitted column? Let's check: in Application.js Sequelize model, we didn't add it because Mongoose schema didn't have it defined in applicationSchema of Application.js! Let's check: in the mongoose code, they did application.contentSubmitted = true; which is an ad-hoc field! Since they didn't define it in the mongoose schema either, we can safely just save or update if it exists.
-    // Wait, let's see. If the frontend relies on `application.contentSubmitted` being checked in database, let's look at Application.js mongoose schema. It had no "contentSubmitted" defined, but mongoose allows schema-free ad-hoc fields. In SQL, you cannot store ad-hoc fields. Let's verify if `contentSubmitted` was in Application.js Mongoose schema: NO (lines 1-22 in Step 43 showed it was not defined).
-    // If it's not defined, does the database need it? We can safely query ContentSubmissions by Application ID to see if one exists. But let's check: did they use a save? If we do `await Application.update({ contentSubmitted: true }, { where: { id: applicationId } })`, if the column doesn't exist, it will throw an SQL error!
-    // Since SQL model doesn't have `contentSubmitted` column, we shouldn't attempt to save it to Application table. Running queries for ContentSubmissions where applicationId is X is the standard relational way. But let's be safe: we can just check if saving it fails or if we shouldn't do it. We won't run `application.contentSubmitted = true` if it's not in the model columns.
-
+    // Content submission recorded in MySQL ContentSubmissions table
     res.status(201).json({
       message: 'Content submitted successfully! Brand will review it.',
       submission

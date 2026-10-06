@@ -1,6 +1,6 @@
-# CollabBridge - Brand Creator Collaboration Platform
+# BrandCreator - Brand & Creator Collaboration Platform
 
-AI-powered marketplace connecting brands and creators with smart analytics and seamless collaboration management.
+AI-powered marketplace connecting brands and creators with smart analytics, fake follower detection, and seamless collaboration management.
 
 ---
 
@@ -8,203 +8,162 @@ AI-powered marketplace connecting brands and creators with smart analytics and s
 
 ```
 brandcreator/
-├── backend/          ← Node.js + Express + MongoDB API
-│   ├── models/       ← Database schemas (User, Campaign, Application, Message)
-│   ├── routes/       ← API endpoints
-│   ├── middleware/   ← JWT auth middleware
-│   ├── utils/        ← AI analysis logic
-│   ├── server.js     ← Main server + Socket.IO
-│   └── seed.js       ← Demo data creator
+├── backend/          ← Node.js + Express + MySQL (Sequelize ORM) API
+│   ├── config/       ← MySQL database connection
+│   ├── models/       ← Sequelize models (User, Campaign, Application, Message, Payment, etc.)
+│   ├── routes/       ← REST API endpoints
+│   ├── middleware/   ← JWT authentication middleware
+│   ├── utils/        ← AI scoring and ML analysis logic
+│   ├── uploads/      ← Uploaded media storage
+│   ├── server.js     ← Express server + Socket.IO real-time WebSocket
+│   └── seed.js       ← MySQL database seeder
 │
-└── frontend/         ← Next.js + Tailwind CSS + Redux
+└── frontend/         ← Next.js 14 + Tailwind CSS + Redux Toolkit
     └── src/app/
-        ├── page.js              ← Landing page
-        ├── auth/                ← Login + Register
-        ├── dashboard/           ← Main dashboard + profile + analytics
-        ├── campaigns/           ← Browse, create, manage campaigns
-        ├── creators/            ← Find creators (brands only)
-        ├── messages/            ← Real-time chat
-        └── admin/               ← Admin panel
+        ├── page.js              ← Modern landing page
+        ├── auth/                ← Login, Register, Password Reset
+        ├── dashboard/           ← Creator & Brand Dashboard
+        │   ├── analytics/       ← Performance analytics & charts
+        │   └── profile/         ← Creator profile & AI audit
+        ├── campaigns/           ← Browse, create, and manage campaigns
+        ├── creators/            ← Creator discovery directory
+        ├── messages/            ← Real-time chat (Socket.IO)
+        └── admin/               ← Platform administration panel
 ```
 
 ---
 
-## SETUP INSTRUCTIONS (Step by Step)
+## Setup Instructions (Step by Step)
 
-### STEP 1: Install Requirements
-You need:
-- **Node.js** (v18+): Download from https://nodejs.org
-- **MongoDB**: 
-  - Option A: Install locally from https://mongodb.com
-  - Option B: Use MongoDB Atlas (free cloud): https://mongodb.com/atlas
+### Step 1: Requirements
+- **Node.js** (v18+)
+- **MySQL Server** (v8.0+): Local MySQL Server (e.g. `MySQL80`) or Cloud MySQL (Railway, Aiven, PlanetScale)
 
-### STEP 2: Setup Backend
+### Step 2: Setup Backend
 
-Open terminal/command prompt:
+Open terminal:
 
 ```bash
-# Go to backend folder
-cd brandcreator/backend
+# Navigate to backend folder
+cd backend
 
-# Install packages
+# Install dependencies
 npm install
 
-# Create environment file
+# Create environment file from template
 cp .env.example .env
 ```
 
-Edit `.env` file:
-```
+Configure `backend/.env`:
+```env
 PORT=5000
-MONGODB_URI=mongodb://localhost:27017/brandcreator
-JWT_SECRET=change_this_to_any_random_string_like_abc123xyz
+DB_HOST=localhost
+DB_PORT=3306
+DB_NAME=brandcreator
+DB_USER=root
+DB_PASSWORD=your_mysql_password
+JWT_SECRET=your_super_secret_jwt_key_change_this_in_production
 CLIENT_URL=http://localhost:3000
+RAPIDAPI_KEY=your_rapidapi_key
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_gmail_app_password
 ```
 
-If using MongoDB Atlas, replace MONGODB_URI with your Atlas connection string.
+Create the database in MySQL:
+```sql
+CREATE DATABASE IF NOT EXISTS brandcreator;
+```
 
+Seed initial demo data (creators, brands, campaigns, payments):
 ```bash
-# Seed demo data (creates demo accounts)
 node seed.js
+```
 
-# Start the backend server
+Start the backend server:
+```bash
 npm run dev
+# or: node server.js
 ```
 
 You should see:
 ```
-MongoDB Connected
-Server running on port 5000
+🚀 Server running on port 5000
+✅ MySQL Connected
+✅ MySQL Models Synced
 ```
 
-### STEP 3: Setup Frontend
+### Step 3: Setup Frontend
 
-Open a NEW terminal window:
+Open a new terminal window:
 
 ```bash
-# Go to frontend folder
-cd brandcreator/frontend
+# Navigate to frontend folder
+cd frontend
 
-# Install packages
+# Install dependencies
 npm install
 
-# Create environment file
-echo "NEXT_PUBLIC_API_URL=http://localhost:5000/api" > .env.local
-echo "NEXT_PUBLIC_SOCKET_URL=http://localhost:5000" >> .env.local
+# Create environment file from template
+cp .env.example .env.local
 
-# Start the frontend
+# Start Next.js development server
 npm run dev
 ```
 
-### STEP 4: Open the App
+### Step 4: Open the Application
 
-Go to: **http://localhost:3000**
+Open your browser at: **http://localhost:3000**
 
 ---
 
 ## Demo Accounts
 
-| Role    | Email               | Password |
-|---------|---------------------|----------|
-| Brand   | brand@demo.com      | demo123  |
-| Creator | creator@demo.com    | demo123  |
-| Admin   | admin@demo.com      | demo123  |
+All seeded demo accounts use password: `demo123`
+
+| Role | Name | Email | Password |
+|:---|:---|:---|:---|
+| **Creator** | Krish Vaghasiya | `krish@creator.com` | `demo123` |
+| **Creator** | Manav Patel | `manav@creator.com` | `demo123` |
+| **Creator** | Utsav Shah | `utsav@creator.com` | `demo123` |
+| **Brand** | Krish Tech Media | `krish@brand.com` | `demo123` |
+| **Brand** | Nike Running | `nike@demo.com` | `demo123` |
+| **Brand** | Spotify India | `spotify@demo.com` | `demo123` |
+| **Admin** | Administrator | `admin@demo.com` | `demo123` |
 
 ---
 
-## Features
+## Core Features
 
 ### For Creators
-- Profile setup with social media links
-- AI score generation (engagement, fake follower detection)
-- Browse and apply to campaigns
-- Real-time chat with brands
-- Analytics dashboard
+- **Verified Profile:** Bio, social links, location, niche tags, and custom rate cards.
+- **AI Creator Audit:** Engagement rate, authentic vs fake follower scoring, consistency ratings.
+- **Campaign Marketplace:** Search and filter active campaigns by niche, compensation, and requirements.
+- **Real-Time Deals:** Direct messaging and deal agreement negotiation.
+- **Earnings & Analytics:** Real-time earnings breakdown and application history.
 
 ### For Brands
-- Create campaigns with budget and requirements
-- Search creators with advanced filters
-- View AI analytics for each creator
-- Manage applications (accept/reject/shortlist)
-- Real-time chat with creators
+- **Campaign Creation:** Set deliverables, requirements (min followers, engagement), and budget.
+- **Creator Discovery:** Advanced search by followers, engagement rate, AI score, and location.
+- **Application Management:** Review proposals, shortlist candidates, and accept deals.
+- **Real-Time Collaboration:** Live chat with creators via WebSockets.
+- **Campaign Performance:** Track proposals, campaign views, and spend.
 
 ### For Admins
-- Platform overview stats
-- User management (verify, ban, feature, delete)
-- Campaign oversight
-
----
-
-## AI Analysis
-
-The AI system analyzes creators based on:
-- **Engagement Rate**: Followers vs interaction ratio
-- **Fake Follower Detection**: ML-based authenticity scoring
-- **Content Consistency**: Regular posting patterns
-- **Audience Location**: Geographic distribution
-- **AI Score (0-100)**: Overall creator quality score
-
----
-
-## API Endpoints
-
-```
-POST /api/auth/register     - Register new user
-POST /api/auth/login        - Login
-GET  /api/auth/me           - Get current user
-
-GET  /api/users/creators    - List creators (with filters)
-PUT  /api/users/profile     - Update profile
-POST /api/users/analyze/:id - Run AI analysis
-
-GET  /api/campaigns         - List active campaigns
-POST /api/campaigns         - Create campaign (brands)
-GET  /api/campaigns/my      - Brand's campaigns
-PUT  /api/campaigns/:id     - Update campaign
-
-POST /api/applications          - Apply to campaign
-GET  /api/applications/my       - Creator's applications
-GET  /api/applications/campaign/:id - Campaign applications
-PUT  /api/applications/:id/status   - Update status
-
-GET  /api/messages/:conversationId  - Get messages
-POST /api/messages                  - Send message
-
-GET  /api/analytics/creator - Creator analytics
-GET  /api/analytics/brand   - Brand analytics
-
-GET  /api/admin/stats       - Platform stats
-GET  /api/admin/users       - All users
-PUT  /api/admin/users/:id/ban    - Ban user
-PUT  /api/admin/users/:id/verify - Verify user
-```
-
----
-
-## Production Deployment
-
-**Backend** → Deploy on Render.com (free):
-1. Push backend to GitHub
-2. Create Web Service on Render
-3. Set environment variables
-
-**Frontend** → Deploy on Vercel (free):
-1. Push frontend to GitHub
-2. Import to Vercel
-3. Set NEXT_PUBLIC_API_URL to your Render URL
-
-**Database** → MongoDB Atlas (free 512MB)
+- **Platform Analytics:** Total users, creator-brand breakdown, active deals, and platform volume.
+- **User Management:** Verify, feature, ban, or remove user accounts.
+- **Campaign Supervision:** Global oversight of active and completed marketplace campaigns.
 
 ---
 
 ## Tech Stack
 
-| Layer    | Technology              |
-|----------|-------------------------|
-| Frontend | Next.js 14, Tailwind CSS, Redux Toolkit |
-| Backend  | Node.js, Express.js     |
-| Database | MongoDB + Mongoose      |
-| Realtime | Socket.IO               |
-| Auth     | JWT                     |
-| Charts   | Recharts                |
-| AI       | Custom scoring algorithm|
+| Layer | Technology |
+|:---|:---|
+| **Frontend** | Next.js 14 (App Router), Tailwind CSS, Redux Toolkit, Recharts, Lucide Icons |
+| **Backend** | Node.js, Express.js |
+| **Database** | **MySQL 8** (with **Sequelize ORM**) |
+| **Realtime** | Socket.IO (WebSockets) |
+| **Authentication** | JWT (JSON Web Tokens) & bcryptjs |
+| **AI / ML** | Scoring heuristics & Instagram analytics engine |
