@@ -52,7 +52,12 @@ router.post('/register', async (req, res) => {
       }
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('❌ Registration Error:', err);
+    let errorMessage = err.message || 'Registration failed';
+    if (err.name?.includes('Sequelize') || err.message?.includes('ECONNREFUSED') || err.message?.includes('Access denied')) {
+      errorMessage = 'Database connection error: Unable to connect to database. Please check DB credentials and host on the server.';
+    }
+    res.status(500).json({ error: errorMessage });
   }
 });
 
@@ -60,6 +65,10 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
 
     const user = await User.findOne({
       where: { email },
@@ -96,7 +105,12 @@ router.post('/login', async (req, res) => {
       }
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('❌ Login Error:', err);
+    let errorMessage = err.message || 'Login failed';
+    if (err.name?.includes('Sequelize') || err.message?.includes('ECONNREFUSED') || err.message?.includes('Access denied')) {
+      errorMessage = 'Database connection error: Unable to connect to database. Please check DB credentials and host on the server.';
+    }
+    res.status(500).json({ error: errorMessage });
   }
 });
 

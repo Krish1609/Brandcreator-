@@ -1,6 +1,20 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '@/lib/api';
 
+const getNetworkErrorMessage = (err, defaultMsg) => {
+  if (err.response?.data?.error) {
+    return err.response.data.error;
+  }
+  if (err.code === 'ECONNABORTED') {
+    return 'Server took too long to respond (Render cold start). Please wait 30 seconds and retry.';
+  }
+  if (!err.response) {
+    const targetUrl = api.defaults.baseURL || 'backend server';
+    return `Cannot reach server at ${targetUrl}. Check backend deployment and NEXT_PUBLIC_API_URL settings.`;
+  }
+  return defaultMsg;
+};
+
 export const login = createAsyncThunk('auth/login', async (credentials, { rejectWithValue }) => {
   try {
     const { data } = await api.post('/auth/login', credentials);
@@ -8,7 +22,7 @@ export const login = createAsyncThunk('auth/login', async (credentials, { reject
     localStorage.setItem('user', JSON.stringify(data.user));
     return data;
   } catch (err) {
-    return rejectWithValue(err.response?.data?.error || 'Login failed');
+    return rejectWithValue(getNetworkErrorMessage(err, 'Login failed'));
   }
 });
 
@@ -19,7 +33,7 @@ export const register = createAsyncThunk('auth/register', async (userData, { rej
     localStorage.setItem('user', JSON.stringify(data.user));
     return data;
   } catch (err) {
-    return rejectWithValue(err.response?.data?.error || 'Registration failed');
+    return rejectWithValue(getNetworkErrorMessage(err, 'Registration failed'));
   }
 });
 

@@ -32,9 +32,40 @@ const io = new Server(server, {
 
 // Middleware
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Health & Root Status Endpoints
+app.get('/', (req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'BrandCreator API',
+    uptime: Math.round(process.uptime()),
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/api/health', async (req, res) => {
+  let dbStatus = 'disconnected';
+  let dbError = null;
+  try {
+    const { sequelize } = require('./models');
+    await sequelize.authenticate();
+    dbStatus = 'connected';
+  } catch (err) {
+    dbError = err.message;
+  }
+
+  const isHealthy = dbStatus === 'connected';
+  res.status(isHealthy ? 200 : 503).json({
+    status: isHealthy ? 'healthy' : 'unhealthy',
+    database: dbStatus,
+    databaseError: dbError,
+    timestamp: new Date().toISOString()
+  });
+});
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));

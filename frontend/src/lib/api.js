@@ -1,10 +1,19 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+let rawApiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api').trim();
+rawApiUrl = rawApiUrl.replace(/\/+$/, '');
+if (!rawApiUrl.endsWith('/api')) {
+  rawApiUrl = `${rawApiUrl}/api`;
+}
+
+if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && rawApiUrl.includes('localhost')) {
+  console.warn('⚠️ NEXT_PUBLIC_API_URL is pointing to localhost while running on a deployed domain! Please configure NEXT_PUBLIC_API_URL in your Vercel/hosting environment settings and redeploy.');
+}
 
 const api = axios.create({
-  baseURL: API_URL,
-  headers: { 'Content-Type': 'application/json' }
+  baseURL: rawApiUrl,
+  headers: { 'Content-Type': 'application/json' },
+  timeout: 45000 // 45s timeout to accommodate Render free-tier cold starts
 });
 
 // Add token to requests
